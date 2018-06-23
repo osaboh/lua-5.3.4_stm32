@@ -1,0 +1,9 @@
+-- IMPORTANT --
+This repository is WIP.
+
+- This repository for running Lua with STM32F4 series.
+- It is a does not verify operation.
+- I just confirmed the build cuccess.
+
+usage
+$ make generic

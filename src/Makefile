@@ -4,22 +4,26 @@
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
 # Your platform. See PLATS for possible values.
+MAKEFLAGS += --no-print-directory
 PLAT= none
+CROSS=/usr/local/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-
+CC= $(CROSS)gcc
 
-CC= gcc -std=gnu99
-CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
+CFLAGS= -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
 LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
 LIBS= -lm $(SYSLIBS) $(MYLIBS)
 
-AR= ar rcu
+AR= $(CROSS)ar rcu
 RANLIB= ranlib
 RM= rm -f
 
-SYSCFLAGS=
-SYSLDFLAGS=
-SYSLIBS=
+SYSCFLAGS=  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -specs=nosys.specs  -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" $(OPT) -ffunction-sections -fdata-sections -g3 -fstack-usage -Wall
+SYSLDFLAGS= -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -specs=nosys.specs
+SYSLIBS=  -lnosys
 
-MYCFLAGS=
+GCCSTD= -std=gnu99
+GCCOPT= -O2
+MYCFLAGS= $(GCCSTD) $(GCCOPT)
 MYLDFLAGS=
 MYLIBS=
 MYOBJS=
@@ -45,6 +49,18 @@ LUAC_O=	luac.o
 ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O)
 ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T)
 ALL_A= $(LUA_A)
+
+strip: $(ALl_T)
+	@echo ''
+	@echo '-- strip of binary --'
+	$(CROSS)strip $(LUA_A)
+	$(CROSS)strip $(LUA_T)
+	$(CROSS)strip $(LUAC_T)
+	@echo ''
+	@echo '-- size of binary --'
+	ls -lh $(LUA_A)
+	$(CROSS)size $(LUA_T)
+	$(CROSS)size $(LUAC_T)
 
 # Targets start here.
 default: $(PLAT)
@@ -105,6 +121,7 @@ freebsd:
 	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_LINUX" SYSLIBS="-Wl,-E -lreadline"
 
 generic: $(ALL)
+	 $(MAKE) $(strip)
 
 linux:
 	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_LINUX" SYSLIBS="-Wl,-E -ldl -lreadline"
@@ -125,7 +142,7 @@ solaris:
 	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN -D_REENTRANT" SYSLIBS="-ldl"
 
 # list targets that do not create files (but not all makes understand .PHONY)
-.PHONY: all $(PLATS) default o a clean depend echo none
+.PHONY: all $(PLATS) default o a clean depend echo none strip
 
 # DO NOT DELETE
 

@@ -2,7 +2,7 @@
 # See doc/readme.html for installation and customization instructions.
 
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
-
+MAKEFLAGS += --no-print-directory
 # Your platform. See PLATS for possible values.
 PLAT= none
 
